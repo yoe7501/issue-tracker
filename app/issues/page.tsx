@@ -4,16 +4,13 @@ import Link from "next/link";
 import Spinner from "../components/Spinner";
 import prisma from "@/prisma/client";
 import IssueStatusBadge from "../components/IssueStatusBadge";
+import IssueActions from "./IssueActions";
 
 const  IssuesPage = async () => {
   const issues = await prisma.issue.findMany();
   return (
     <div>
-      <div className='mb-5'>
-      <Button>
-        <Link href="/issues/new">New Issue</Link>
-      </Button>
-      </div>
+      <IssueActions/>
 
       <Table.Root variant='surface'>
         <Table.Header>
