@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 
 
-export async function Patch(request: NextRequest,
+export async function PATCH(request: NextRequest,
      {params} : {params: {id: string}}){
     const body = await request.json();
     const validation = issueSchema.safeParse(body);
@@ -18,7 +18,7 @@ export async function Patch(request: NextRequest,
     if(!issue)
         return NextResponse.json({error: 'invalid issue'}, {status: 404});
     
-    const updatedIssue = prisma.issue.update({
+    const updatedIssue = await prisma.issue.update({
         where: {id : issue.id},
         data: {
             title: body.title,

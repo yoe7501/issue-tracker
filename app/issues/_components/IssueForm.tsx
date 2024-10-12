@@ -13,17 +13,17 @@ import dynamic from "next/dynamic";
 import { z } from "zod";
 import { Issue } from "@prisma/client";
 
-const SimpleMDE = dynamic(
-  ()=> import('react-simplemde-editor'), 
-  {ssr: false})
+const SimpleMDE = dynamic(() => import("react-simplemde-editor"), {
+  ssr: false,
+});
 
 type IssueFormData = z.infer<typeof issueSchema>;
 
-interface Props{
-  issue?: Issue
+interface Props {
+  issue?: Issue;
 }
 
-const IssueForm = ({issue}: Props) => {
+const IssueForm = ({ issue }: Props) => {
   const router = useRouter();
   const {
     register,
@@ -38,13 +38,14 @@ const IssueForm = ({issue}: Props) => {
   const onSubmit = handleSubmit(async (data) => {
     try {
       setSubmitting(true);
-      await axios.post("/api/issues", data);
+      if (issue) await axios.patch("/api/issues/" + issue.id, data);
+      else await axios.post("/api/issues", data);
       router.push("/issues");
     } catch (error) {
       setSubmitting(false);
       setError("An unexpected error occur");
     }
-  })
+  });
   return (
     <div className="max-w-xl">
       {error && (
@@ -52,11 +53,9 @@ const IssueForm = ({issue}: Props) => {
           <Callout.Text>{error}</Callout.Text>
         </Callout.Root>
       )}
-      <form
-        className="space-y-3"
-        onSubmit={onSubmit}
-      >
-        <TextField.Root defaultValue={issue?.title}
+      <form className="space-y-3" onSubmit={onSubmit}>
+        <TextField.Root
+          defaultValue={issue?.title}
           placeholder="Title"
           {...register("title")}
         ></TextField.Root>
@@ -71,7 +70,10 @@ const IssueForm = ({issue}: Props) => {
         />
         <ErrorMessage>{errors.description?.message}</ErrorMessage>
 
-        <Button disabled={isSubmitting}>Submit New Issue{isSubmitting && <Spinner/>}</Button>
+        <Button disabled={isSubmitting}>
+          {issue ? "Update Issue" : "Submit New Issue"}{' '}
+          {isSubmitting && <Spinner />}
+        </Button>
       </form>
     </div>
   );
