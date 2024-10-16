@@ -3,7 +3,7 @@ import { Status } from "@prisma/client";
 import IssueActions from "./IssueActions";
 
 import Pagination from "@/app/components/Pagination";
-import IssueTable, { columnNames, IssueQuery } from "./issueTable";
+import IssueTable, { columnNames, IssueQuery } from "./IssueTable";
 import { Flex } from "@radix-ui/themes";
 
 interface Props {
