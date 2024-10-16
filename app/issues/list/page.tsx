@@ -8,10 +8,10 @@ import NextLink from "next/link";
 import { ArrowUpIcon } from "@radix-ui/react-icons";
 
 interface Props {
-  searchParams: {status: Status, orderBy: keyof Issue}
+  searchParams: { status: Status; orderBy: keyof Issue }; // orderBy is required here
 }
 
-const IssuesPage = async ({searchParams}: Props) => {
+const IssuesPage = async ({ searchParams }: Props) => {
   const columns: {
     label: string;
     value: keyof Issue;
@@ -26,19 +26,25 @@ const IssuesPage = async ({searchParams}: Props) => {
   const status = statuses.includes(searchParams.status)
     ? searchParams.status
     : "All";
+
+  // Validate the orderBy field
+  const validOrderBy = columns.find(column => column.value === searchParams.orderBy)
+    ? searchParams.orderBy
+    : "createdAt"; // Default to createdAt if invalid
+
   let issues;
-  if (status === ("All" as Status)) {
+  if (status === "All") {
+    // Fetch issues without filtering by status, but apply sorting
     issues = await prisma.issue.findMany({
-      orderBy: {title: 'asc'}
+      orderBy: { [validOrderBy]: "asc" }, // Dynamically sort by orderBy
     });
   } else {
+    // Fetch issues filtered by status and apply sorting
     issues = await prisma.issue.findMany({
       where: {
         status: status as Status,
       },
-      orderBy: {
-        [searchParams.orderBy]: 'asc'
-      }
+      orderBy: { [validOrderBy]: "asc" }, // Dynamically sort by orderBy
     });
   }
 
@@ -50,13 +56,15 @@ const IssuesPage = async ({searchParams}: Props) => {
         <Table.Header>
           <Table.Row>
             {columns.map((column) => (
-              <Table.ColumnHeaderCell key={column.value}>
+              <Table.ColumnHeaderCell key={column.value} className={column.className}>
                 <NextLink
                   href={{ query: { ...searchParams, orderBy: column.value } }}
                 >
                   {column.label}
                 </NextLink>
-                {column.value === searchParams.orderBy && <ArrowUpIcon className='inline'/>}
+                {column.value === searchParams.orderBy && (
+                  <ArrowUpIcon className="inline" />
+                )}
               </Table.ColumnHeaderCell>
             ))}
           </Table.Row>
@@ -75,7 +83,7 @@ const IssuesPage = async ({searchParams}: Props) => {
                 <IssueStatusBadge status={issue.status} />
               </Table.Cell>
               <Table.Cell className="hidden md:table-cell">
-                {issue.createdAt.toDateString()}
+                {new Date(issue.createdAt).toDateString()}
               </Table.Cell>
             </Table.Row>
           ))}
