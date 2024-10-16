@@ -6,9 +6,14 @@ import IssueActions from "./IssueActions";
 import { Issue, Status } from "@prisma/client";
 import NextLink from "next/link";
 import { ArrowUpIcon } from "@radix-ui/react-icons";
+import Pagination from "@/app/components/Pagination";
 
 interface Props {
-  searchParams: { status: Status; orderBy: keyof Issue }; // orderBy is required here
+  searchParams: { 
+    status: Status,
+    orderBy: keyof Issue, 
+    page: string,
+  }; 
 }
 
 const IssuesPage = async ({ searchParams }: Props) => {
@@ -32,21 +37,34 @@ const IssuesPage = async ({ searchParams }: Props) => {
     ? searchParams.orderBy
     : "createdAt"; // Default to createdAt if invalid
 
+  const page = parseInt(searchParams.page) || 1;
+  const pageSize = 10;
+
+
+
   let issues;
+  let issueCount;
   if (status === "All") {
     // Fetch issues without filtering by status, but apply sorting
+    issueCount = await prisma.issue.count()
     issues = await prisma.issue.findMany({
-      orderBy: { [validOrderBy]: "asc" }, // Dynamically sort by orderBy
+      orderBy: { [validOrderBy]: "asc" }, 
+      skip: (page - 1) * pageSize,
+      take: pageSize
     });
   } else {
+    issueCount = await prisma.issue.count({where: {status}})
     // Fetch issues filtered by status and apply sorting
     issues = await prisma.issue.findMany({
       where: {
         status: status as Status,
       },
-      orderBy: { [validOrderBy]: "asc" }, // Dynamically sort by orderBy
+      orderBy: { [validOrderBy]: "asc" },
+      skip: (page - 1) * pageSize,
+      take: pageSize
     });
   }
+
 
   return (
     <div>
@@ -89,6 +107,10 @@ const IssuesPage = async ({ searchParams }: Props) => {
           ))}
         </Table.Body>
       </Table.Root>
+      <Pagination 
+        pageSize={pageSize}
+        currentPage={page}
+        itemCount={issueCount}/>
     </div>
   );
 };
