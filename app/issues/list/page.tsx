@@ -28,12 +28,17 @@ const IssuesPage = async ({searchParams}: Props) => {
     : "All";
   let issues;
   if (status === ("All" as Status)) {
-    issues = await prisma.issue.findMany();
+    issues = await prisma.issue.findMany({
+      orderBy: {title: 'asc'}
+    });
   } else {
     issues = await prisma.issue.findMany({
       where: {
         status: status as Status,
       },
+      orderBy: {
+        [searchParams.orderBy]: 'asc'
+      }
     });
   }
 
