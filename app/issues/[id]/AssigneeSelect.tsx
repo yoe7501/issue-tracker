@@ -24,6 +24,7 @@ const AssigneeSelect = ({ issue }: { issue: Issue }) => {
     .catch(()=> {
         toast.error('Chnages could not be saved.');
     });
+    window.location.reload();
   }
 
   return (
